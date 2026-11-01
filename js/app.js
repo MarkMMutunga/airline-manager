@@ -88,6 +88,7 @@ function configureAuthUi() {
     modeToggle.textContent = authSignUpMode ? 'Back to sign in' : 'Create account';
   };
   authForm.onsubmit = submitAuth;
+  document.getElementById('auth-close').onclick = () => document.getElementById('auth-dialog').close();
   document.getElementById('auth-toggle').onclick = handleAuthToggle;
   initializeAuth();
 }
