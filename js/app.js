@@ -64,11 +64,11 @@ function uid() { return Math.random().toString(36).slice(2, 10); }
 function money(n) { return '$' + Number(n).toLocaleString(); }
 function logActivity(text) { state.activity.unshift({ text, time: new Date().toLocaleTimeString() }); state.activity = state.activity.slice(0, 20); saveData(); }
 
-let trafficAnimationFrame = 0;
+let trafficUpdateTimer = 0;
 
 function renderView(name) {
-  cancelAnimationFrame(trafficAnimationFrame);
-  trafficAnimationFrame = 0;
+  clearInterval(trafficUpdateTimer);
+  trafficUpdateTimer = 0;
   const tpl = document.getElementById('tpl-' + name);
   document.getElementById('app').innerHTML = '';
   document.getElementById('app').appendChild(tpl.content.cloneNode(true));
@@ -165,6 +165,31 @@ const cityCoordinates = {
   'hong kong': [22.3193, 114.1694]
 };
 
+function flightProgress(flight, route) {
+  if (!route || flight.status === 'Cancelled') return 0;
+  const departure = new Date(flight.departure).getTime();
+  if (!Number.isFinite(departure) || Date.now() <= departure) return 0;
+  const duration = Math.max(3600000, (Number(route.distance) || 1000) / 850 * 3600000);
+  return Math.min((Date.now() - departure) / duration, 0.99);
+}
+
+function flightProgressLabel(flight, route) {
+  const progress = flightProgress(flight, route);
+  if (flight.status === 'Cancelled') return 'Cancelled';
+  if (progress === 0) return 'On ground';
+  if (progress >= 0.99) return 'Arriving';
+  return `${Math.round(progress * 100)}% en route`;
+}
+
+function flightEta(flight, route) {
+  if (!route || flight.status === 'Cancelled') return 'Not available';
+  const departure = new Date(flight.departure).getTime();
+  if (!Number.isFinite(departure)) return 'Not available';
+  if (Date.now() <= departure) return `Departs ${new Date(departure).toLocaleTimeString()}`;
+  const duration = Math.max(3600000, (Number(route.distance) || 1000) / 850 * 3600000);
+  return new Date(departure + duration).toLocaleTimeString();
+}
+
 function renderTrafficMap() {
   const mapElement = document.getElementById('traffic-map');
   const summary = document.getElementById('traffic-summary');
@@ -203,27 +228,25 @@ function renderTrafficMap() {
       airports.set(city, true);
       L.circleMarker(coordinates, { radius: 6, color: '#e2e8f0', weight: 2, fillColor: '#0ea5e9', fillOpacity: 1 }).addTo(map).bindTooltip(city);
     });
-    const progress = { Scheduled: 0.2, Boarding: 0.45, Departed: 0.7, Delayed: 0.5, Cancelled: 0.1 }[flight.status] || 0.3;
+    const progress = flightProgress(flight, route);
     const planePosition = [origin[0] + (destination[0] - origin[0]) * progress, origin[1] + (destination[1] - origin[1]) * progress];
     const plane = L.marker(planePosition, { icon: L.divIcon({ className: `plane-marker ${flight.status.toLowerCase()}`, html: '<span>✈</span>', iconSize: [28, 28], iconAnchor: [14, 14] }) }).addTo(map).bindTooltip(`${flight.number} · ${flight.status}`);
     plane.on('click', () => showFlightDetails(flight.id));
-    movingPlanes.push({ plane, origin, destination, progress, duration: flight.status === 'Delayed' ? 70000 : 45000 });
+    movingPlanes.push({ plane, flight, route, origin, destination });
   });
   if (bounds.length) map.fitBounds(bounds, { padding: [30, 30] });
   if (movingPlanes.length) {
-    const startedAt = performance.now();
-    const animatePlanes = now => {
-      const elapsed = now - startedAt;
+    const updatePlanes = () => {
       movingPlanes.forEach(item => {
-        const progress = (item.progress + elapsed / item.duration) % 1;
+        const progress = flightProgress(item.flight, item.route);
         item.plane.setLatLng([
           item.origin[0] + (item.destination[0] - item.origin[0]) * progress,
           item.origin[1] + (item.destination[1] - item.origin[1]) * progress
         ]);
       });
-      trafficAnimationFrame = requestAnimationFrame(animatePlanes);
     };
-    trafficAnimationFrame = requestAnimationFrame(animatePlanes);
+    updatePlanes();
+    trafficUpdateTimer = setInterval(updatePlanes, 15000);
   }
 }
 
@@ -283,9 +306,11 @@ function showFlightDetails(flightId) {
     <div class="detail-route"><strong>${route ? route.origin : 'Unknown'}</strong><span>→</span><strong>${route ? route.dest : 'Unknown'}</strong></div>
     <dl class="detail-grid">
       <div><dt>Departure</dt><dd>${new Date(flight.departure).toLocaleString()}</dd></div>
+      <div><dt>Progress</dt><dd>${flightProgressLabel(flight, route)}</dd></div>
       <div><dt>Aircraft</dt><dd>${aircraft ? `${aircraft.tail} · ${aircraft.model}` : 'Unassigned'}</dd></div>
       <div><dt>Capacity</dt><dd>${aircraft ? `${aircraft.capacity} seats` : 'Not available'}</dd></div>
       <div><dt>Distance</dt><dd>${route ? `${Number(route.distance).toLocaleString()} km` : 'Not available'}</dd></div>
+      <div><dt>Estimated arrival</dt><dd>${flightEta(flight, route)}</dd></div>
     </dl>`;
   document.getElementById('flight-detail-dialog').showModal();
 }
