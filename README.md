@@ -6,18 +6,21 @@ Skyline Ops is a browser-based airline operations dashboard for managing flights
 
 - Dashboard KPIs for flights, aircraft, crew, bookings, revenue, and on-time performance
 - Interactive world map with airports, routes, and flight progress based on departure time and route distance
+- Live OpenSky airspace count with a graceful fallback when the public endpoint is unavailable
 - Live airport weather from Open-Meteo with operational weather alerts
 - Clickable flight details with aircraft, route, booking, progress, and estimated arrival information
-- Notifications for delayed or cancelled flights, aircraft maintenance, and crew coverage issues
+- Notifications for delayed or cancelled flights, aircraft maintenance, crew coverage, and duty-hour reviews
 - Flight search and status filtering
 - Aircraft utilization and maintenance attention indicators
-- Crew-to-flight assignment and reassignment
-- Route performance metrics for flights, bookings, and revenue
+- Aircraft availability and overlapping schedule validation when creating flights
+- Crew-to-flight assignment and reassignment with overlap conflict protection
+- Route performance metrics for flights, bookings, revenue, load factor, and full-flight revenue forecast
 - Revenue analytics by cabin class
 - Booking load-factor summaries and overbooking protection
 - Light and dark themes with saved preference
 - JSON backup, Flights CSV, and Bookings CSV exports
 - Optional Supabase email authentication with sign-in, account creation, session restoration, and sign-out
+- Branded SVG favicon for browser tabs and bookmarks
 - Responsive layout for desktop and mobile screens
 
 ## Run Locally
@@ -41,7 +44,10 @@ Then open `http://localhost:8000`.
 ```text
 index.html          Application markup and view templates
 css/styles.css      Layout, responsive styling, light/dark themes
-js/app.js           State, rendering, interactions, map, weather, and exports
+js/app.js           State, rendering, interactions, APIs, authentication, and exports
+js/supabase-config.js
+					Supabase project URL and browser-safe publishable key
+favicon.svg         Skyline Ops browser favicon
 ```
 
 ## Data Storage
@@ -56,6 +62,7 @@ The selected theme is stored separately so it persists between visits. Clearing 
 - OpenStreetMap provides map tiles and attribution.
 - Open-Meteo provides current airport weather.
 - Google Fonts provides Space Grotesk and DM Mono.
+- OpenSky Network provides the optional live airspace aircraft count.
 - Supabase provides optional browser authentication using the publishable key in `js/supabase-config.js`.
 
 An internet connection is needed for external map tiles, weather, and fonts. The core tables and local data continue to work if those services are unavailable.
@@ -71,6 +78,8 @@ Use the download button in the header to export:
 ## Development Notes
 
 The application uses plain HTML, CSS, and JavaScript with no bundler. Keep state changes inside `js/app.js`, preserve the existing template-based view structure, and run editor diagnostics after modifying the application.
+
+The current schedule checks use route distance and an estimated cruise speed of 850 km/h to calculate flight windows. This supports local validation and visual progress; it is not a substitute for certified dispatch or aviation scheduling software.
 
 ## Supabase Authentication
 
