@@ -228,6 +228,8 @@ tbody tr:hover { background: #f6f9f6; }
 .unassigned { color: var(--muted); font: 11px "DM Mono", monospace; }
 .assignment-note { margin: -4px 0 0; color: var(--teal); font: 10px "DM Mono", monospace; }
 .assignment-note.assignment-conflict { color: var(--coral); }
+.flight-validation-note { margin: -4px 0 0; color: var(--teal); font: 10px "DM Mono", monospace; }
+.flight-validation-note.flight-validation-error { color: var(--coral); }
 .route-code { color: var(--teal); font: 600 12px "DM Mono", monospace; }
 .route-metric { display: inline-grid; place-items: center; min-width: 24px; min-height: 24px; padding: 3px 6px; border-radius: 5px; background: #eef5f1; color: var(--teal); font: 500 11px "DM Mono", monospace; }
 .route-load { color: var(--amber); font: 500 11px "DM Mono", monospace; }

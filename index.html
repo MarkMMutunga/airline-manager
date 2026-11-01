@@ -162,6 +162,7 @@
         <label>Aircraft<select name="aircraft" id="flight-aircraft"></select></label>
         <label>Departure<input name="departure" type="datetime-local" required></label>
         <label>Status<select name="status"><option>Scheduled</option><option>Boarding</option><option>Departed</option><option>Delayed</option><option>Cancelled</option></select></label>
+        <p id="flight-validation-note" class="flight-validation-note" aria-live="polite"></p>
         <div class="dialog-actions">
           <button value="cancel">Cancel</button>
           <button value="default">Save</button>

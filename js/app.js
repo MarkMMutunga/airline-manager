@@ -389,14 +389,39 @@ function renderFlights() {
 
   document.getElementById('add-flight').onclick = () => document.getElementById('flight-dialog').showModal();
   const form = document.getElementById('flight-form');
+  const validationNote = document.getElementById('flight-validation-note');
+  const updateFlightValidation = () => {
+    const values = Object.fromEntries(new FormData(form));
+    const aircraft = state.aircraft.find(item => item.id === values.aircraft);
+    const conflict = findAircraftConflict(values.aircraft, values.route, values.departure);
+    if (aircraft && ['Maintenance', 'Grounded'].includes(aircraft.status)) {
+      validationNote.textContent = `${aircraft.tail} is ${aircraft.status.toLowerCase()} and cannot be scheduled.`;
+      validationNote.classList.add('flight-validation-error');
+    } else if (conflict) {
+      validationNote.textContent = `Aircraft conflict: ${conflict.number} overlaps this departure.`;
+      validationNote.classList.add('flight-validation-error');
+    } else {
+      validationNote.textContent = 'Aircraft and schedule are available.';
+      validationNote.classList.remove('flight-validation-error');
+    }
+  };
+  form.querySelectorAll('select, input[name="departure"]').forEach(field => field.onchange = updateFlightValidation);
   form.onsubmit = (e) => {
     const v = Object.fromEntries(new FormData(form));
     if (form.returnValue === 'cancel') return;
+    const aircraft = state.aircraft.find(item => item.id === v.aircraft);
+    const conflict = findAircraftConflict(v.aircraft, v.route, v.departure);
+    if (aircraft && ['Maintenance', 'Grounded'].includes(aircraft.status) || conflict) {
+      e.preventDefault();
+      updateFlightValidation();
+      return;
+    }
     state.flights.push({ id: uid(), number: v.number, route: v.route, aircraft: v.aircraft, departure: v.departure, status: v.status });
     logActivity('Flight ' + v.number + ' scheduled');
     saveData();
     renderFlights();
   };
+  updateFlightValidation();
 }
 
 function aircraftMetrics(aircraft) {
@@ -499,6 +524,15 @@ function findCrewConflict(crewId, flightId) {
   const assignedWindow = assignedFlight && flightWindow(assignedFlight);
   if (!assignedFlight || !assignedWindow) return null;
   return targetWindow.start < assignedWindow.end && targetWindow.end > assignedWindow.start ? assignedFlight : null;
+}
+
+function findAircraftConflict(aircraftId, routeId, departure) {
+  const targetWindow = flightWindow({ route: routeId, departure });
+  if (!targetWindow) return null;
+  return state.flights.find(flight => flight.aircraft === aircraftId && flight.status !== 'Cancelled' && (() => {
+    const existingWindow = flightWindow(flight);
+    return existingWindow && targetWindow.start < existingWindow.end && targetWindow.end > existingWindow.start;
+  })()) || null;
 }
 
 function openCrewAssignment(crewId) {
