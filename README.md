@@ -17,6 +17,7 @@ Skyline Ops is a browser-based airline operations dashboard for managing flights
 - Booking load-factor summaries and overbooking protection
 - Light and dark themes with saved preference
 - JSON backup, Flights CSV, and Bookings CSV exports
+- Optional Supabase email authentication with sign-in, account creation, session restoration, and sign-out
 - Responsive layout for desktop and mobile screens
 
 ## Run Locally
@@ -55,6 +56,7 @@ The selected theme is stored separately so it persists between visits. Clearing 
 - OpenStreetMap provides map tiles and attribution.
 - Open-Meteo provides current airport weather.
 - Google Fonts provides Space Grotesk and DM Mono.
+- Supabase provides optional browser authentication using the publishable key in `js/supabase-config.js`.
 
 An internet connection is needed for external map tiles, weather, and fonts. The core tables and local data continue to work if those services are unavailable.
 
@@ -69,3 +71,9 @@ Use the download button in the header to export:
 ## Development Notes
 
 The application uses plain HTML, CSS, and JavaScript with no bundler. Keep state changes inside `js/app.js`, preserve the existing template-based view structure, and run editor diagnostics after modifying the application.
+
+## Supabase Authentication
+
+The app is configured for the Supabase project URL and publishable key in `js/supabase-config.js`. The publishable key is safe for browser use when Supabase Row Level Security is configured correctly. Never place a service-role or secret key in this file.
+
+Email confirmation behavior is controlled in the Supabase dashboard under Authentication settings. The current operational records remain in local browser storage; authentication is connected and ready for the next database-sync step.

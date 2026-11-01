@@ -126,6 +126,8 @@ body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opa
 .export-button { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--ink); cursor: pointer; }
 .export-button:hover { border-color: var(--teal); color: var(--teal); }
 .export-button span { font-size: 20px; line-height: 1; }
+.auth-button { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid var(--teal); border-radius: 7px; padding: 8px 11px; background: var(--teal); color: #fff; font: 600 11px "Space Grotesk", sans-serif; cursor: pointer; }
+.auth-button:hover { background: var(--teal-dark); }
 main { position: relative; z-index: 1; width: min(1280px, 100%); padding: 42px clamp(18px, 4vw, 52px) 64px; }
 .page-intro { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 25px; }
 .eyebrow { color: var(--teal); font: 500 10px "DM Mono", monospace; letter-spacing: .12em; text-transform: uppercase; }
@@ -192,6 +194,12 @@ main { position: relative; z-index: 1; width: min(1280px, 100%); padding: 42px c
 .export-options button:hover { border-color: var(--teal); background: #eef5f1; }
 .export-options strong { font: 600 12px "Space Grotesk", sans-serif; }
 .export-options span { color: var(--muted); font: 10px "DM Mono", monospace; }
+.auth-dialog { max-width: 420px; }
+.auth-message { margin: 18px 0 4px; color: var(--muted); font-size: 12px; }
+.auth-dialog label { display: flex; flex-direction: column; gap: 5px; }
+.auth-dialog input { width: 100%; }
+.auth-mode-button { border: 0; background: transparent; color: var(--teal); font: 600 11px "Space Grotesk", sans-serif; cursor: pointer; }
+.auth-mode-button:hover { color: var(--coral); text-decoration: underline; }
 .detail-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
 .detail-heading h3 { margin-top: 7px; }
 .detail-close { border: 0; border-radius: 6px; padding: 7px 10px; background: #eef2ef; color: var(--muted); font: 600 11px "Space Grotesk", sans-serif; cursor: pointer; }

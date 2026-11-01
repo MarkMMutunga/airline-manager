@@ -31,6 +31,7 @@
   <button id="notification-toggle" class="notification-button" type="button" title="Open notifications" aria-label="Open notifications">
     <span aria-hidden="true">&#128276;</span><b id="notification-count">0</b>
   </button>
+  <button id="auth-toggle" class="auth-button" type="button" title="Sign in" aria-label="Sign in">Sign in</button>
 </header>
 
 <main id="app"></main>
@@ -140,6 +141,25 @@
       <button type="button" data-export="json"><strong>Full JSON backup</strong><span>All flights, aircraft, crew, routes, bookings, and activity</span></button>
       <button type="button" data-export="flights"><strong>Flights CSV</strong><span>Schedule, route, aircraft, departure, and status</span></button>
       <button type="button" data-export="bookings"><strong>Bookings CSV</strong><span>Passenger, flight, seat, cabin, and fare</span></button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="auth-dialog" class="auth-dialog">
+  <form id="auth-form" method="dialog">
+    <div class="detail-heading">
+      <div>
+        <span class="eyebrow">Cloud access</span>
+        <h3 id="auth-title">Sign in</h3>
+      </div>
+      <button class="detail-close" value="close" aria-label="Close authentication dialog">Close</button>
+    </div>
+    <p id="auth-message" class="auth-message">Sign in to connect your account.</p>
+    <label>Email<input id="auth-email" type="email" autocomplete="email" required></label>
+    <label>Password<input id="auth-password" type="password" autocomplete="current-password" minlength="6" required></label>
+    <div class="dialog-actions">
+      <button id="auth-mode-toggle" type="button" class="auth-mode-button">Create account</button>
+      <button id="auth-submit" value="default">Sign in</button>
     </div>
   </form>
 </dialog>
@@ -297,6 +317,8 @@
 </template>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

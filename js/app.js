@@ -1,5 +1,9 @@
 const STORAGE_KEY = 'airline-ops-data-v2';
 const THEME_KEY = 'airline-ops-theme';
+const supabaseClient = window.supabase && window.SKYLINE_SUPABASE_CONFIG
+  ? window.supabase.createClient(window.SKYLINE_SUPABASE_CONFIG.url, window.SKYLINE_SUPABASE_CONFIG.publishableKey)
+  : null;
+let authSignUpMode = false;
 
 const defaultData = {
   flights: [],
@@ -24,6 +28,68 @@ function applyTheme(theme) {
     toggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
     toggle.title = isDark ? 'Switch to light theme' : 'Switch to dark theme';
   }
+}
+
+function updateAuthButton(session) {
+  const button = document.getElementById('auth-toggle');
+  if (!button) return;
+  button.textContent = session?.user?.email ? session.user.email.split('@')[0] : 'Sign in';
+  button.title = session?.user ? 'Sign out' : 'Sign in';
+  button.setAttribute('aria-label', button.title);
+}
+
+async function initializeAuth() {
+  if (!supabaseClient) return;
+  const { data } = await supabaseClient.auth.getSession();
+  updateAuthButton(data.session);
+  supabaseClient.auth.onAuthStateChange((_event, session) => updateAuthButton(session));
+}
+
+async function submitAuth(event) {
+  event.preventDefault();
+  const message = document.getElementById('auth-message');
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  if (!supabaseClient) {
+    message.textContent = 'Cloud authentication is unavailable.';
+    return;
+  }
+  const result = authSignUpMode
+    ? await supabaseClient.auth.signUp({ email, password })
+    : await supabaseClient.auth.signInWithPassword({ email, password });
+  if (result.error) {
+    message.textContent = result.error.message;
+    return;
+  }
+  message.textContent = authSignUpMode ? 'Account created. Check your email if confirmation is enabled.' : 'Signed in successfully.';
+  document.getElementById('auth-dialog').close();
+}
+
+async function handleAuthToggle() {
+  if (!supabaseClient) return;
+  const { data } = await supabaseClient.auth.getSession();
+  if (data.session) {
+    await supabaseClient.auth.signOut();
+    updateAuthButton(null);
+    return;
+  }
+  document.getElementById('auth-dialog').showModal();
+}
+
+function configureAuthUi() {
+  const authForm = document.getElementById('auth-form');
+  const modeToggle = document.getElementById('auth-mode-toggle');
+  const title = document.getElementById('auth-title');
+  const submit = document.getElementById('auth-submit');
+  modeToggle.onclick = () => {
+    authSignUpMode = !authSignUpMode;
+    title.textContent = authSignUpMode ? 'Create account' : 'Sign in';
+    submit.textContent = authSignUpMode ? 'Create account' : 'Sign in';
+    modeToggle.textContent = authSignUpMode ? 'Back to sign in' : 'Create account';
+  };
+  authForm.onsubmit = submitAuth;
+  document.getElementById('auth-toggle').onclick = handleAuthToggle;
+  initializeAuth();
 }
 
 function seedData() {
@@ -665,5 +731,6 @@ document.getElementById('notification-toggle').addEventListener('click', () => {
 });
 document.getElementById('export-toggle').addEventListener('click', () => document.getElementById('export-dialog').showModal());
 document.querySelectorAll('[data-export]').forEach(button => button.addEventListener('click', () => downloadExport(button.dataset.export)));
+configureAuthUi();
 setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleString(); }, 1000);
 renderView('dashboard');
