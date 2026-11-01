@@ -69,8 +69,8 @@ declare
   table_name text;
 begin
   foreach table_name in array array['flights', 'aircraft', 'crew', 'routes', 'bookings', 'activity'] loop
-    execute format('drop policy if exists "Users manage own %I" on public.%I', table_name, table_name);
-    execute format('create policy "Users manage own %I" on public.%I for all using (auth.uid() = user_id) with check (auth.uid() = user_id)', table_name, table_name);
+    execute format('drop policy if exists %I on public.%I', 'Users manage own ' || table_name, table_name);
+    execute format('create policy %I on public.%I for all using (auth.uid() = user_id) with check (auth.uid() = user_id)', 'Users manage own ' || table_name, table_name);
   end loop;
 end $$;
 
