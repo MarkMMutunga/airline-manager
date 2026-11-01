@@ -315,6 +315,42 @@ function showFlightDetails(flightId) {
   document.getElementById('flight-detail-dialog').showModal();
 }
 
+function csvValue(value) {
+  return `"${String(value ?? '').replaceAll('"', '""')}"`;
+}
+
+function downloadExport(format) {
+  let filename;
+  let content;
+  let type;
+  if (format === 'json') {
+    filename = 'skyline-ops-backup.json';
+    content = JSON.stringify({ exportedAt: new Date().toISOString(), data: state }, null, 2);
+    type = 'application/json';
+  } else if (format === 'flights') {
+    filename = 'skyline-ops-flights.csv';
+    content = [['Flight', 'Route', 'Aircraft', 'Departure', 'Status'], ...state.flights.map(flight => {
+      const route = state.routes.find(item => item.id === flight.route);
+      const aircraft = state.aircraft.find(item => item.id === flight.aircraft);
+      return [flight.number, route ? `${route.origin} to ${route.dest}` : '', aircraft ? aircraft.tail : '', flight.departure, flight.status];
+    })].map(row => row.map(csvValue).join(',')).join('\r\n');
+    type = 'text/csv';
+  } else {
+    filename = 'skyline-ops-bookings.csv';
+    content = [['Passenger', 'Flight', 'Seat', 'Class', 'Price'], ...state.bookings.map(booking => {
+      const flight = state.flights.find(item => item.id === booking.flight);
+      return [booking.passenger, flight ? flight.number : '', booking.seat, booking.cls, booking.price];
+    })].map(row => row.map(csvValue).join(',')).join('\r\n');
+    type = 'text/csv';
+  }
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([content], { type }));
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+  document.getElementById('export-dialog').close();
+}
+
 function renderFlights() {
   const body = document.getElementById('flights-body');
   const search = document.getElementById('flight-search');
@@ -528,5 +564,7 @@ document.getElementById('notification-toggle').addEventListener('click', () => {
   renderNotifications();
   document.getElementById('notification-dialog').showModal();
 });
+document.getElementById('export-toggle').addEventListener('click', () => document.getElementById('export-dialog').showModal());
+document.querySelectorAll('[data-export]').forEach(button => button.addEventListener('click', () => downloadExport(button.dataset.export)));
 setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleString(); }, 1000);
 renderView('dashboard');

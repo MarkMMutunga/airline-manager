@@ -25,6 +25,9 @@
   <button id="theme-toggle" class="theme-button" type="button" title="Switch theme" aria-label="Switch theme">
     <span aria-hidden="true">&#9680;</span>
   </button>
+  <button id="export-toggle" class="export-button" type="button" title="Export reports" aria-label="Export reports">
+    <span aria-hidden="true">&#8595;</span>
+  </button>
   <button id="notification-toggle" class="notification-button" type="button" title="Open notifications" aria-label="Open notifications">
     <span aria-hidden="true">&#128276;</span><b id="notification-count">0</b>
   </button>
@@ -116,6 +119,24 @@
       <button class="detail-close" value="close" aria-label="Close notifications">Close</button>
     </div>
     <div id="notification-list" class="notification-list"></div>
+  </form>
+</dialog>
+
+<dialog id="export-dialog" class="export-dialog">
+  <form method="dialog">
+    <div class="detail-heading">
+      <div>
+        <span class="eyebrow">Data center</span>
+        <h3>Export reports</h3>
+      </div>
+      <button class="detail-close" value="close" aria-label="Close export dialog">Close</button>
+    </div>
+    <p class="export-description">Download a backup or shareable report from the current operations data.</p>
+    <div class="export-options">
+      <button type="button" data-export="json"><strong>Full JSON backup</strong><span>All flights, aircraft, crew, routes, bookings, and activity</span></button>
+      <button type="button" data-export="flights"><strong>Flights CSV</strong><span>Schedule, route, aircraft, departure, and status</span></button>
+      <button type="button" data-export="bookings"><strong>Bookings CSV</strong><span>Passenger, flight, seat, cabin, and fare</span></button>
+    </div>
   </form>
 </dialog>
 
