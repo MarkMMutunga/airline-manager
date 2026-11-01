@@ -467,6 +467,7 @@ function renderRoutes() {
 
 function renderBookings() {
   const body = document.getElementById('bookings-body');
+  const capacitySummary = document.getElementById('booking-capacity-summary');
   body.innerHTML = state.bookings.map(b => {
     const f = state.flights.find(x => x.id === b.flight);
     return `<tr>
@@ -474,14 +475,41 @@ function renderBookings() {
       <td class="actions"><button data-del="${b.id}">Delete</button></td>
     </tr>`;
   }).join('');
+  capacitySummary.innerHTML = state.flights.filter(flight => flight.status !== 'Cancelled').map(flight => {
+    const aircraft = state.aircraft.find(item => item.id === flight.aircraft);
+    const booked = state.bookings.filter(booking => booking.flight === flight.id).length;
+    const capacity = aircraft?.capacity || 0;
+    const loadFactor = capacity ? Math.min(100, Math.round((booked / capacity) * 100)) : 0;
+    return `<div class="booking-capacity-card"><div><strong>${flight.number}</strong><span>${booked} / ${capacity || '—'} seats</span></div><i><b style="width: ${loadFactor}%"></b></i><small>${loadFactor}% load</small></div>`;
+  }).join('') || '<div class="booking-capacity-empty">No active flights available.</div>';
   body.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { state.bookings = state.bookings.filter(x => x.id !== b.dataset.del); saveData(); renderBookings(); });
   const flightSel = document.getElementById('booking-flight');
-  flightSel.innerHTML = state.flights.map(f => `<option value="${f.id}">${f.number}</option>`).join('');
+  flightSel.innerHTML = state.flights.filter(f => f.status !== 'Cancelled').map(f => `<option value="${f.id}">${f.number}</option>`).join('') || '<option value="">No available flights</option>';
+  const capacityNote = document.getElementById('booking-capacity-note');
+  const updateCapacityNote = () => {
+    const flight = state.flights.find(item => item.id === flightSel.value);
+    const aircraft = flight && state.aircraft.find(item => item.id === flight.aircraft);
+    const booked = state.bookings.filter(booking => booking.flight === flight?.id).length;
+    const remaining = aircraft ? Math.max(0, aircraft.capacity - booked) : 0;
+    capacityNote.textContent = aircraft ? `${remaining} seat${remaining === 1 ? '' : 's'} remaining · ${booked} of ${aircraft.capacity} booked` : 'Aircraft capacity unavailable';
+    capacityNote.classList.toggle('capacity-full', Boolean(aircraft && remaining === 0));
+  };
+  flightSel.onchange = updateCapacityNote;
+  updateCapacityNote();
   document.getElementById('add-booking').onclick = () => document.getElementById('booking-dialog').showModal();
   const form = document.getElementById('booking-form');
   form.onsubmit = (e) => {
     const v = Object.fromEntries(new FormData(form));
     if (form.returnValue === 'cancel') return;
+    const flight = state.flights.find(item => item.id === v.flight);
+    const aircraft = flight && state.aircraft.find(item => item.id === flight.aircraft);
+    const booked = state.bookings.filter(booking => booking.flight === v.flight).length;
+    if (aircraft && booked >= aircraft.capacity) {
+      e.preventDefault();
+      capacityNote.textContent = 'This flight is full. Choose another flight.';
+      capacityNote.classList.add('capacity-full');
+      return;
+    }
     state.bookings.push({ id: uid(), passenger: v.passenger, flight: v.flight, seat: v.seat, cls: v.cls, price: Number(v.price) });
     logActivity('Booking for ' + v.passenger);
     saveData();

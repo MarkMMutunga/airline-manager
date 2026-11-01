@@ -246,6 +246,7 @@
       <h2>Bookings</h2>
       <button id="add-booking">+ Add Booking</button>
     </div>
+    <div id="booking-capacity-summary" class="booking-capacity-summary"></div>
     <table>
       <thead><tr><th>Passenger</th><th>Flight</th><th>Seat</th><th>Class</th><th>Price</th><th>Actions</th></tr></thead>
       <tbody id="bookings-body"></tbody>
@@ -255,6 +256,7 @@
         <h3>Add Booking</h3>
         <label>Passenger<input name="passenger" required></label>
         <label>Flight<select name="flight" id="booking-flight"></select></label>
+        <p id="booking-capacity-note" class="booking-capacity-note" aria-live="polite"></p>
         <label>Seat<input name="seat" required></label>
         <label>Class<select name="cls"><option>Economy</option><option>Business</option><option>First</option></select></label>
         <label>Price<input name="price" type="number" required></label>

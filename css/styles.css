@@ -219,6 +219,16 @@ tbody tr:hover { background: #f6f9f6; }
 .route-code { color: var(--teal); font: 600 12px "DM Mono", monospace; }
 .route-metric { display: inline-grid; place-items: center; min-width: 24px; min-height: 24px; padding: 3px 6px; border-radius: 5px; background: #eef5f1; color: var(--teal); font: 500 11px "DM Mono", monospace; }
 .route-revenue { color: var(--coral); font: 500 11px "DM Mono", monospace; }
+.booking-capacity-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 9px; margin: 0 0 14px; }
+.booking-capacity-card { padding: 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.booking-capacity-card > div { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.booking-capacity-card strong { color: var(--teal); font: 600 12px "DM Mono", monospace; }
+.booking-capacity-card span, .booking-capacity-card small { color: var(--muted); font: 10px "DM Mono", monospace; }
+.booking-capacity-card i { display: block; height: 6px; margin: 9px 0 5px; overflow: hidden; border-radius: 999px; background: #e5ece8; }
+.booking-capacity-card i b { display: block; height: 100%; border-radius: inherit; background: var(--teal); }
+.booking-capacity-empty { padding: 14px; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); font-size: 12px; }
+.booking-capacity-note { margin: -4px 0 0; color: var(--teal); font: 10px "DM Mono", monospace; }
+.booking-capacity-note.capacity-full { color: var(--coral); }
 dialog { width: min(430px, calc(100% - 28px)); background: var(--surface); color: var(--ink); border-color: var(--line); border-radius: 11px; box-shadow: 0 25px 70px rgba(23,37,42,.22); }
 dialog::backdrop { background: rgba(23,37,42,.34); backdrop-filter: blur(4px); }
 dialog h3 { margin: 0 0 4px; font-size: 20px; letter-spacing: -.04em; }
