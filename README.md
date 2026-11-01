@@ -6,7 +6,7 @@ Skyline Ops is a browser-based airline operations dashboard for managing flights
 
 - Dashboard KPIs for flights, aircraft, crew, bookings, revenue, and on-time performance
 - Interactive world map with airports, routes, and flight progress based on departure time and route distance
-- Live OpenSky airspace count with a graceful fallback when the public endpoint is unavailable
+- Live OpenSky airspace count and sampled aircraft markers with a graceful fallback when the public endpoint is unavailable
 - Live airport weather from Open-Meteo with operational weather alerts
 - Clickable flight details with aircraft, route, booking, progress, and estimated arrival information
 - Notifications for delayed or cancelled flights, aircraft maintenance, crew coverage, and duty-hour reviews
@@ -47,6 +47,10 @@ css/styles.css      Layout, responsive styling, light/dark themes
 js/app.js           State, rendering, interactions, APIs, authentication, and exports
 js/supabase-config.js
 					Supabase project URL and browser-safe publishable key
+supabase-schema.sql  Database tables and Row Level Security policies
+tests/operations.test.js
+					Dependency-free tests for scheduling and load-factor rules
+package.json         Test script
 favicon.svg         Skyline Ops browser favicon
 ```
 
@@ -85,4 +89,25 @@ The current schedule checks use route distance and an estimated cruise speed of 
 
 The app is configured for the Supabase project URL and publishable key in `js/supabase-config.js`. The publishable key is safe for browser use when Supabase Row Level Security is configured correctly. Never place a service-role or secret key in this file.
 
-Email confirmation behavior is controlled in the Supabase dashboard under Authentication settings. The current operational records remain in local browser storage; authentication is connected and ready for the next database-sync step.
+Email confirmation behavior is controlled in the Supabase dashboard under Authentication settings. Operational records use local browser storage by default and can synchronize to Supabase after the schema is installed.
+
+## Supabase Cloud Sync
+
+Cloud persistence is implemented but requires the schema to exist first:
+
+1. Open the Supabase project SQL Editor.
+2. Paste and run `supabase-schema.sql`.
+3. Keep Row Level Security enabled on every table.
+4. Sign in to Skyline Ops.
+
+When a signed-in user has no cloud records, the app migrates the current local data. If cloud records exist, they are loaded into the dashboard. Later local changes are synchronized for that signed-in user. The app falls back to local storage when the schema or network is unavailable.
+
+## Tests and Deployment
+
+Install Node.js, then run:
+
+```text
+npm test
+```
+
+The repository includes a GitHub Actions workflow at `.github/workflows/deploy.yml` for GitHub Pages deployment from `main`. Enable GitHub Pages in the repository settings with **GitHub Actions** as the source after the first workflow run.

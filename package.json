@@ -1,0 +1,8 @@
+{
+  "name": "skyline-ops",
+  "private": true,
+  "description": "Skyline Ops airline operations dashboard",
+  "scripts": {
+    "test": "node --test tests"
+  }
+}

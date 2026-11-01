@@ -18,7 +18,12 @@ function loadData() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultData; }
   catch { return { ...defaultData }; }
 }
-function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (supabaseClient) {
+    supabaseClient.auth.getSession().then(({ data }) => syncLocalToCloud(data.session));
+  }
+}
 
 function applyTheme(theme) {
   const isDark = theme === 'dark';
@@ -42,7 +47,17 @@ async function initializeAuth() {
   if (!supabaseClient) return;
   const { data } = await supabaseClient.auth.getSession();
   updateAuthButton(data.session);
-  supabaseClient.auth.onAuthStateChange((_event, session) => updateAuthButton(session));
+  if (data.session) {
+    await syncCloudData(data.session);
+    renderView('dashboard');
+  }
+  supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+    updateAuthButton(session);
+    if (session) {
+      await syncCloudData(session);
+      renderView('dashboard');
+    }
+  });
 }
 
 async function submitAuth(event) {
@@ -93,6 +108,36 @@ function configureAuthUi() {
   initializeAuth();
 }
 
+async function syncCloudData(session) {
+  if (!supabaseClient || !session?.user) return;
+  const userId = session.user.id;
+  const tables = ['flights', 'aircraft', 'crew', 'routes', 'bookings', 'activity'];
+  const results = await Promise.all(tables.map(table => supabaseClient.from(table).select('*').eq('user_id', userId)));
+  if (results.some(result => result.error)) return;
+  const hasCloudData = results.some(result => result.data.length > 0);
+  if (!hasCloudData) {
+    await Promise.all(tables.map(table => {
+      const rows = state[table].map(item => ({ ...item, user_id: userId }));
+      return rows.length ? supabaseClient.from(table).upsert(rows) : Promise.resolve();
+    }));
+    return;
+  }
+  tables.forEach((table, index) => {
+    state[table] = results[index].data.map(({ user_id, ...item }) => item);
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+async function syncLocalToCloud(session) {
+  if (!supabaseClient || !session?.user) return;
+  const userId = session.user.id;
+  const tables = ['flights', 'aircraft', 'crew', 'routes', 'bookings', 'activity'];
+  await Promise.all(tables.map(table => {
+    const rows = state[table].map(item => ({ ...item, user_id: userId }));
+    return rows.length ? supabaseClient.from(table).upsert(rows) : Promise.resolve();
+  }));
+}
+
 function seedData() {
   if (state.routes.length || state.aircraft.length || state.flights.length) return;
   const r1 = { id: uid(), code: 'SK101', origin: 'New York', dest: 'London', distance: 5570 };
@@ -132,10 +177,13 @@ function money(n) { return '$' + Number(n).toLocaleString(); }
 function logActivity(text) { state.activity.unshift({ text, time: new Date().toLocaleTimeString() }); state.activity = state.activity.slice(0, 20); saveData(); }
 
 let trafficUpdateTimer = 0;
+let airspaceUpdateTimer = 0;
 
 function renderView(name) {
   clearInterval(trafficUpdateTimer);
   trafficUpdateTimer = 0;
+  clearInterval(airspaceUpdateTimer);
+  airspaceUpdateTimer = 0;
   const tpl = document.getElementById('tpl-' + name);
   document.getElementById('app').innerHTML = '';
   document.getElementById('app').appendChild(tpl.content.cloneNode(true));
@@ -213,6 +261,37 @@ async function renderAirspace() {
   } catch {
     count.textContent = 'Unavailable';
     status.textContent = 'OpenSky service unavailable · Local flights remain active';
+  }
+}
+
+async function addLiveAirspace(map) {
+  if (!map || !document.getElementById('traffic-map')?.isConnected) return;
+  try {
+    const response = await fetch('https://opensky-network.org/api/states/all');
+    if (!response.ok) return;
+    const data = await response.json();
+    const liveLayer = L.layerGroup().addTo(map);
+    const updateMarkers = () => {
+      liveLayer.clearLayers();
+      (data.states || []).filter(stateItem => Number.isFinite(stateItem[5]) && Number.isFinite(stateItem[6])).slice(0, 300).forEach(stateItem => {
+        const callsign = (stateItem[1] || 'Unknown').trim();
+        const marker = L.marker([stateItem[6], stateItem[5]], { icon: L.divIcon({ className: 'live-aircraft-marker', html: '<span>✈</span>', iconSize: [18, 18], iconAnchor: [9, 9] }) });
+        marker.bindTooltip(`${callsign} · Live OpenSky`);
+        liveLayer.addLayer(marker);
+      });
+    };
+    updateMarkers();
+    airspaceUpdateTimer = setInterval(async () => {
+      if (!document.getElementById('traffic-map')?.isConnected) return;
+      const refresh = await fetch('https://opensky-network.org/api/states/all');
+      if (refresh.ok) {
+        const refreshedData = await refresh.json();
+        data.states = refreshedData.states;
+        updateMarkers();
+      }
+    }, 60000);
+  } catch {
+    // The local route map remains available when OpenSky is unavailable.
   }
 }
 
@@ -323,6 +402,7 @@ function renderTrafficMap() {
     movingPlanes.push({ plane, flight, route, origin, destination });
   });
   if (bounds.length) map.fitBounds(bounds, { padding: [30, 30] });
+  addLiveAirspace(map);
   if (movingPlanes.length) {
     const updatePlanes = () => {
       movingPlanes.forEach(item => {
