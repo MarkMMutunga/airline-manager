@@ -453,16 +453,52 @@ function renderCrew() {
     renderCrew();
   };
   const assignmentForm = document.getElementById('crew-assignment-form');
-  assignmentForm.onsubmit = () => {
+  const assignmentNote = document.getElementById('assignment-note');
+  const updateAssignmentNote = () => {
+    const values = Object.fromEntries(new FormData(assignmentForm));
+    const conflict = findCrewConflict(values.crew, values.flight);
+    assignmentNote.textContent = conflict ? `Conflict: ${conflict.number} overlaps this flight.` : 'No schedule conflicts detected.';
+    assignmentNote.classList.toggle('assignment-conflict', Boolean(conflict));
+  };
+  assignmentForm.onsubmit = event => {
     if (assignmentForm.returnValue === 'cancel') return;
     const values = Object.fromEntries(new FormData(assignmentForm));
     const crew = state.crew.find(member => member.id === values.crew);
     if (!crew) return;
+    const conflict = findCrewConflict(values.crew, values.flight);
+    if (conflict) {
+      event.preventDefault();
+      assignmentNote.textContent = `Cannot assign: ${conflict.number} overlaps this flight.`;
+      assignmentNote.classList.add('assignment-conflict');
+      return;
+    }
     crew.flight = values.flight || null;
     logActivity(`${crew.name} assigned to ${values.flight ? state.flights.find(flight => flight.id === values.flight)?.number : 'roster'}`);
     saveData();
     renderCrew();
   };
+  assignmentForm.querySelector('#assignment-crew').onchange = updateAssignmentNote;
+  assignmentForm.querySelector('#assignment-flight').onchange = updateAssignmentNote;
+}
+
+function flightWindow(flight) {
+  const route = state.routes.find(item => item.id === flight.route);
+  const start = new Date(flight.departure).getTime();
+  if (!route || !Number.isFinite(start)) return null;
+  const duration = Math.max(3600000, (Number(route.distance) || 1000) / 850 * 3600000);
+  return { start, end: start + duration };
+}
+
+function findCrewConflict(crewId, flightId) {
+  if (!flightId) return null;
+  const target = state.flights.find(flight => flight.id === flightId);
+  const targetWindow = target && flightWindow(target);
+  if (!targetWindow) return null;
+  const crew = state.crew.find(member => member.id === crewId);
+  const assignedFlight = crew && state.flights.find(flight => flight.id === crew.flight && flight.id !== flightId);
+  const assignedWindow = assignedFlight && flightWindow(assignedFlight);
+  if (!assignedFlight || !assignedWindow) return null;
+  return targetWindow.start < assignedWindow.end && targetWindow.end > assignedWindow.start ? assignedFlight : null;
 }
 
 function openCrewAssignment(crewId) {
@@ -472,6 +508,10 @@ function openCrewAssignment(crewId) {
   flightSelect.innerHTML = '<option value="">Unassigned</option>' + state.flights.filter(flight => flight.status !== 'Cancelled').map(flight => `<option value="${flight.id}">${flight.number} · ${flight.status}</option>`).join('');
   const crew = state.crew.find(item => item.id === crewId);
   flightSelect.value = crew?.flight || '';
+  const assignmentNote = document.getElementById('assignment-note');
+  const conflict = findCrewConflict(crewId, flightSelect.value);
+  assignmentNote.textContent = conflict ? `Conflict: ${conflict.number} overlaps this flight.` : 'No schedule conflicts detected.';
+  assignmentNote.classList.toggle('assignment-conflict', Boolean(conflict));
   document.getElementById('crew-assignment-dialog').showModal();
 }
 
