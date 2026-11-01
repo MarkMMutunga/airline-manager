@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'airline-ops-data-v2';
+const THEME_KEY = 'airline-ops-theme';
 
 const defaultData = {
   flights: [],
@@ -14,6 +15,16 @@ function loadData() {
   catch { return { ...defaultData }; }
 }
 function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function applyTheme(theme) {
+  const isDark = theme === 'dark';
+  document.body.classList.toggle('dark-theme', isDark);
+  const toggle = document.getElementById('theme-toggle');
+  if (toggle) {
+    toggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+    toggle.title = isDark ? 'Switch to light theme' : 'Switch to dark theme';
+  }
+}
 
 function seedData() {
   if (state.routes.length || state.aircraft.length || state.flights.length) return;
@@ -454,6 +465,12 @@ function renderBookings() {
 }
 
 document.querySelectorAll('.nav button').forEach(b => b.addEventListener('click', () => renderView(b.dataset.view)));
+applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const nextTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, nextTheme);
+  applyTheme(nextTheme);
+});
 document.getElementById('notification-toggle').addEventListener('click', () => {
   renderNotifications();
   document.getElementById('notification-dialog').showModal();

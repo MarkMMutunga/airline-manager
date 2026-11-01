@@ -120,6 +120,9 @@ body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opa
 .notification-button > span { font-size: 15px; line-height: 1; }
 .notification-button b { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; padding: 2px 4px; border-radius: 999px; background: var(--coral); color: #fff; font: 9px "DM Mono", monospace; }
 .notification-button b[hidden] { display: none; }
+.theme-button { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--ink); cursor: pointer; }
+.theme-button:hover { border-color: var(--teal); color: var(--teal); }
+.theme-button span { font-size: 17px; line-height: 1; }
 main { position: relative; z-index: 1; width: min(1280px, 100%); padding: 42px clamp(18px, 4vw, 52px) 64px; }
 .page-intro { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 25px; }
 .eyebrow { color: var(--teal); font: 500 10px "DM Mono", monospace; letter-spacing: .12em; text-transform: uppercase; }
@@ -242,3 +245,40 @@ dialog input:focus, dialog select:focus { border-color: var(--teal); box-shadow:
 	.filter-field { width: auto; }
 	table { display: block; overflow-x: auto; white-space: nowrap; }
 }
+
+body.dark-theme {
+	--ink: #e7efec;
+	--muted: #9bb0aa;
+	--paper: #101a1c;
+	--surface: #182528;
+	--line: #2b3f40;
+	--teal: #5ac7b7;
+	--teal-dark: #40a99b;
+	--coral: #ff8b72;
+	--amber: #f0bb58;
+	--shadow: 0 18px 45px rgba(0, 0, 0, .2);
+}
+body.dark-theme::before { opacity: .1; background-image: radial-gradient(#8da7a0 0.6px, transparent .6px); }
+body.dark-theme .topbar { background: rgba(24,37,40,.92); }
+body.dark-theme .nav button:hover { background: #243638; }
+body.dark-theme .nav button.active { background: var(--teal); color: #102122; }
+body.dark-theme .traffic-map { background: #253b3c; }
+body.dark-theme .leaflet-tile { filter: saturate(.5) brightness(.7); }
+body.dark-theme .weather-card, body.dark-theme .revenue-metrics div { background: #1e3032; }
+body.dark-theme .weather-alert { background: #352a29; }
+body.dark-theme .route-metric { background: #213b38; }
+body.dark-theme .detail-route { background: #213b38; }
+body.dark-theme .detail-grid div { background: #1e3032; }
+body.dark-theme th { background: #213335; }
+body.dark-theme tbody tr:hover { background: #1e3032; }
+body.dark-theme .activity li { background: rgba(24,37,40,.65); }
+body.dark-theme .search-field input, body.dark-theme .filter-field select, body.dark-theme dialog input, body.dark-theme dialog select { background: #1e3032; color: var(--ink); }
+body.dark-theme .dialog-actions button[value="cancel"], body.dark-theme .detail-close { background: #2a3b3d; color: var(--muted); }
+body.dark-theme .notification-item { background: #1e3032; }
+body.dark-theme .notification-item.high { background: #352a29; }
+body.dark-theme .notification-empty { background: #1e3032; }
+body.dark-theme .status.Scheduled { background: #2a3b3d; color: #b7c8c3; }
+body.dark-theme .status.Boarding { background: #4a3b21; color: #f0c66c; }
+body.dark-theme .status.Departed, body.dark-theme .status.Active, body.dark-theme .status.Available { background: #214841; color: #75d7c8; }
+body.dark-theme .status.Delayed, body.dark-theme .status.Grounded { background: #4b2f2c; color: #ff9a84; }
+body.dark-theme .status.Cancelled, body.dark-theme .status.Off { background: #2a3b3d; color: #b7c8c3; }
