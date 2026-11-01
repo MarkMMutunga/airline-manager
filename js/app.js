@@ -94,6 +94,10 @@ function getNotifications() {
   if (!state.crew.some(member => member.status === 'On Duty')) {
     notifications.push({ severity: 'high', title: 'No crew currently on duty', detail: 'Review the crew roster before dispatching flights' });
   }
+  state.crew.filter(member => Number(member.hours) >= 9000).forEach(member => {
+    const critical = Number(member.hours) >= 10000;
+    notifications.push({ severity: critical ? 'high' : 'watch', title: `${member.name} needs duty-hour review`, detail: `${Number(member.hours).toLocaleString()} flight hours recorded${critical ? ' · assignment review recommended' : ' · approaching review threshold'}` });
+  });
   return notifications;
 }
 
