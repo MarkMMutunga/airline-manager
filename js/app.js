@@ -522,9 +522,11 @@ function renderRoutes() {
     const flightIds = new Set(routeFlights.map(flight => flight.id));
     const routeBookings = state.bookings.filter(booking => flightIds.has(booking.flight));
     const routeRevenue = routeBookings.reduce((sum, booking) => sum + Number(booking.price || 0), 0);
+    const availableSeats = routeFlights.reduce((sum, flight) => sum + Number(state.aircraft.find(aircraft => aircraft.id === flight.aircraft)?.capacity || 0), 0);
+    const loadFactor = availableSeats ? Math.min(100, Math.round((routeBookings.length / availableSeats) * 100)) : 0;
     return `<tr>
     <td><strong class="route-code">${r.code}</strong></td><td>${r.origin}</td><td>${r.dest}</td><td>${Number(r.distance).toLocaleString()}</td>
-    <td><span class="route-metric">${routeFlights.length}</span></td><td><span class="route-metric">${routeBookings.length}</span></td><td><span class="route-revenue">${money(routeRevenue)}</span></td>
+    <td><span class="route-metric">${routeFlights.length}</span></td><td><span class="route-metric">${routeBookings.length}</span></td><td><span class="route-load">${loadFactor}%</span></td><td><span class="route-revenue">${money(routeRevenue)}</span></td>
     <td class="actions"><button data-del="${r.id}">Delete</button></td>
   </tr>`;
   }).join('');
