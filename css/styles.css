@@ -141,6 +141,10 @@ main { position: relative; z-index: 1; width: min(1280px, 100%); padding: 42px c
 .card:nth-child(4) { border-top: 3px solid #8a9db0; }
 .card:nth-child(5) { border-top: 3px solid var(--coral); }
 .card:nth-child(6) { border-top: 3px solid #c5a35b; }
+.airspace-panel { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: -12px 0 22px; padding: 12px 15px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.62); }
+.airspace-panel div { display: flex; align-items: baseline; gap: 12px; }
+.airspace-panel strong { color: var(--teal); font-size: 15px; }
+.airspace-panel > span { color: var(--muted); font: 10px "DM Mono", monospace; text-align: right; }
 .traffic-panel, .weather-panel { margin: 0 0 22px; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; box-shadow: var(--shadow); }
 .section-heading { padding: 19px 21px 15px; }
 .section-heading h3 { color: var(--ink); font-size: 17px; letter-spacing: -.03em; }
@@ -303,6 +307,7 @@ body.dark-theme .dialog-actions button[value="cancel"], body.dark-theme .detail-
 body.dark-theme .notification-item { background: #1e3032; }
 body.dark-theme .notification-item.high { background: #352a29; }
 body.dark-theme .notification-empty { background: #1e3032; }
+body.dark-theme .airspace-panel { background: rgba(24,37,40,.72); }
 body.dark-theme .status.Scheduled { background: #2a3b3d; color: #b7c8c3; }
 body.dark-theme .status.Boarding { background: #4a3b21; color: #f0c66c; }
 body.dark-theme .status.Departed, body.dark-theme .status.Active, body.dark-theme .status.Available { background: #214841; color: #75d7c8; }

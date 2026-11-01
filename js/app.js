@@ -128,8 +128,25 @@ function renderDashboard() {
   const ul = document.getElementById('activity');
   ul.innerHTML = state.activity.map(a => `<li>${a.time} — ${a.text}</li>`).join('') || '<li>No activity yet</li>';
   renderRevenueAnalytics();
+  renderAirspace();
   renderTrafficMap();
   renderWeather();
+}
+
+async function renderAirspace() {
+  const count = document.getElementById('airspace-count');
+  const status = document.getElementById('airspace-status');
+  if (!count || !status) return;
+  try {
+    const response = await fetch('https://opensky-network.org/api/states/all');
+    if (!response.ok) throw new Error('OpenSky request failed');
+    const data = await response.json();
+    count.textContent = `${(data.states || []).length.toLocaleString()} aircraft`;
+    status.textContent = `OpenSky live · ${new Date().toLocaleTimeString()}`;
+  } catch {
+    count.textContent = 'Unavailable';
+    status.textContent = 'OpenSky service unavailable · Local flights remain active';
+  }
 }
 
 function renderRevenueAnalytics() {
