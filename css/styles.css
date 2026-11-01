@@ -213,6 +213,9 @@ tbody tr:hover { background: #f6f9f6; }
 .actions button { border-radius: 5px; padding: 5px 8px; background: #fff0ed; color: #bd4d3b; font: 600 11px "Space Grotesk", sans-serif; }
 .actions button[data-assign] { margin-right: 5px; background: #e4f3ef; color: var(--teal); }
 .unassigned { color: var(--muted); font: 11px "DM Mono", monospace; }
+.route-code { color: var(--teal); font: 600 12px "DM Mono", monospace; }
+.route-metric { display: inline-grid; place-items: center; min-width: 24px; min-height: 24px; padding: 3px 6px; border-radius: 5px; background: #eef5f1; color: var(--teal); font: 500 11px "DM Mono", monospace; }
+.route-revenue { color: var(--coral); font: 500 11px "DM Mono", monospace; }
 dialog { width: min(430px, calc(100% - 28px)); background: var(--surface); color: var(--ink); border-color: var(--line); border-radius: 11px; box-shadow: 0 25px 70px rgba(23,37,42,.22); }
 dialog::backdrop { background: rgba(23,37,42,.34); backdrop-filter: blur(4px); }
 dialog h3 { margin: 0 0 4px; font-size: 20px; letter-spacing: -.04em; }

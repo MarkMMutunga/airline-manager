@@ -405,10 +405,17 @@ function openCrewAssignment(crewId) {
 
 function renderRoutes() {
   const body = document.getElementById('routes-body');
-  body.innerHTML = state.routes.map(r => `<tr>
-    <td>${r.code}</td><td>${r.origin}</td><td>${r.dest}</td><td>${r.distance}</td>
+  body.innerHTML = state.routes.map(r => {
+    const routeFlights = state.flights.filter(flight => flight.route === r.id);
+    const flightIds = new Set(routeFlights.map(flight => flight.id));
+    const routeBookings = state.bookings.filter(booking => flightIds.has(booking.flight));
+    const routeRevenue = routeBookings.reduce((sum, booking) => sum + Number(booking.price || 0), 0);
+    return `<tr>
+    <td><strong class="route-code">${r.code}</strong></td><td>${r.origin}</td><td>${r.dest}</td><td>${Number(r.distance).toLocaleString()}</td>
+    <td><span class="route-metric">${routeFlights.length}</span></td><td><span class="route-metric">${routeBookings.length}</span></td><td><span class="route-revenue">${money(routeRevenue)}</span></td>
     <td class="actions"><button data-del="${r.id}">Delete</button></td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
   body.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { state.routes = state.routes.filter(x => x.id !== b.dataset.del); saveData(); renderRoutes(); });
   document.getElementById('add-route').onclick = () => document.getElementById('route-dialog').showModal();
   const form = document.getElementById('route-form');
