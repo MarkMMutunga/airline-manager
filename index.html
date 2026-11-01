@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Airline Operations Dashboard</title>
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">✈ Skyline Ops</div>
+  <nav class="nav">
+    <button data-view="dashboard" class="active">Dashboard</button>
+    <button data-view="flights">Flights</button>
+    <button data-view="aircraft">Aircraft</button>
+    <button data-view="crew">Crew</button>
+    <button data-view="routes">Routes</button>
+    <button data-view="bookings">Bookings</button>
+  </nav>
+  <div class="clock" id="clock"></div>
+  <button id="notification-toggle" class="notification-button" type="button" title="Open notifications" aria-label="Open notifications">
+    <span aria-hidden="true">&#128276;</span><b id="notification-count">0</b>
+  </button>
+</header>
+
+<main id="app"></main>
+
+<template id="tpl-dashboard">
+  <section class="view">
+    <div class="page-intro">
+      <div>
+        <span class="eyebrow">Operations center / Live</span>
+        <h2>Overview</h2>
+      </div>
+      <span class="intro-note">Skyline network · Today</span>
+    </div>
+    <div class="cards">
+      <div class="card"><span>Active Flights</span><strong id="kpi-flights">0</strong></div>
+      <div class="card"><span>Aircraft</span><strong id="kpi-aircraft">0</strong></div>
+      <div class="card"><span>Crew On Duty</span><strong id="kpi-crew">0</strong></div>
+      <div class="card"><span>Bookings Today</span><strong id="kpi-bookings">0</strong></div>
+      <div class="card"><span>Revenue</span><strong id="kpi-revenue">$0</strong></div>
+      <div class="card"><span>On-Time %</span><strong id="kpi-ontime">100%</strong></div>
+    </div>
+    <section class="analytics-panel">
+      <div class="section-heading">
+        <div>
+          <h3>Revenue Snapshot</h3>
+          <p>Booking performance across the current network</p>
+        </div>
+        <span class="analytics-source">Live booking data</span>
+      </div>
+      <div id="revenue-analytics" class="revenue-analytics"></div>
+    </section>
+    <section class="traffic-panel">
+      <div class="section-heading">
+        <div>
+          <h3>Live Flight Traffic</h3>
+          <p>Current route activity across the Skyline network</p>
+        </div>
+        <span id="traffic-summary" class="traffic-summary"></span>
+      </div>
+      <div id="traffic-map" class="traffic-map"></div>
+      <div class="map-legend">
+        <span><i class="legend-dot airport-dot"></i>Airport</span>
+        <span><i class="legend-dot scheduled-dot"></i>Scheduled</span>
+        <span><i class="legend-dot active-dot"></i>Boarding / Departed</span>
+        <span><i class="legend-dot delayed-dot"></i>Delayed</span>
+      </div>
+    </section>
+    <section class="weather-panel">
+      <div class="section-heading">
+        <div>
+          <h3>Route Weather</h3>
+          <p>Current conditions at airports in the active flight network</p>
+        </div>
+        <span class="weather-source">Open-Meteo</span>
+      </div>
+      <div id="weather-alerts" class="weather-alerts"></div>
+      <div id="weather-grid" class="weather-grid">
+        <div class="weather-loading">Loading current conditions...</div>
+      </div>
+    </section>
+    <h3>Recent Activity</h3>
+    <ul id="activity" class="activity"></ul>
+  </section>
+</template>
+
+<dialog id="flight-detail-dialog" class="flight-detail-dialog">
+  <form method="dialog">
+    <div class="detail-heading">
+      <div>
+        <span class="eyebrow">Flight detail</span>
+        <h3 id="detail-flight-number">Flight</h3>
+      </div>
+      <button class="detail-close" value="close" aria-label="Close flight details">Close</button>
+    </div>
+    <div id="flight-detail-content" class="flight-detail-content"></div>
+  </form>
+</dialog>
+
+<dialog id="notification-dialog" class="notification-dialog">
+  <form method="dialog">
+    <div class="detail-heading">
+      <div>
+        <span class="eyebrow">Operations watch</span>
+        <h3>Notifications</h3>
+      </div>
+      <button class="detail-close" value="close" aria-label="Close notifications">Close</button>
+    </div>
+    <div id="notification-list" class="notification-list"></div>
+  </form>
+</dialog>
+
+<template id="tpl-flights">
+  <section class="view">
+    <div class="toolbar">
+      <h2>Flights</h2>
+      <button id="add-flight">+ Add Flight</button>
+    </div>
+    <div class="table-tools">
+      <label class="search-field"><span>Search flights</span><input id="flight-search" type="search" placeholder="Flight number, route, aircraft"></label>
+      <label class="filter-field"><span>Status</span><select id="flight-status-filter"><option value="all">All statuses</option><option>Scheduled</option><option>Boarding</option><option>Departed</option><option>Delayed</option><option>Cancelled</option></select></label>
+    </div>
+    <table>
+      <thead><tr><th>Flight #</th><th>Route</th><th>Aircraft</th><th>Departure</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="flights-body"></tbody>
+    </table>
+    <dialog id="flight-dialog">
+      <form id="flight-form" method="dialog">
+        <h3>Add Flight</h3>
+        <label>Flight #<input name="number" required></label>
+        <label>Route<select name="route" id="flight-route"></select></label>
+        <label>Aircraft<select name="aircraft" id="flight-aircraft"></select></label>
+        <label>Departure<input name="departure" type="datetime-local" required></label>
+        <label>Status<select name="status"><option>Scheduled</option><option>Boarding</option><option>Departed</option><option>Delayed</option><option>Cancelled</option></select></label>
+        <div class="dialog-actions">
+          <button value="cancel">Cancel</button>
+          <button value="default">Save</button>
+        </div>
+      </form>
+    </dialog>
+  </section>
+</template>
+
+<template id="tpl-aircraft">
+  <section class="view">
+    <div class="toolbar">
+      <h2>Aircraft Fleet</h2>
+      <button id="add-aircraft">+ Add Aircraft</button>
+    </div>
+    <table>
+      <thead><tr><th>Tail #</th><th>Model</th><th>Capacity</th><th>Status</th><th>Hours</th><th>Utilization</th><th>Actions</th></tr></thead>
+      <tbody id="aircraft-body"></tbody>
+    </table>
+    <dialog id="aircraft-dialog">
+      <form id="aircraft-form" method="dialog">
+        <h3>Add Aircraft</h3>
+        <label>Tail #<input name="tail" required></label>
+        <label>Model<input name="model" required></label>
+        <label>Capacity<input name="capacity" type="number" required></label>
+        <label>Status<select name="status"><option>Active</option><option>Maintenance</option><option>Grounded</option></select></label>
+        <label>Flight Hours<input name="hours" type="number" value="0"></label>
+        <div class="dialog-actions">
+          <button value="cancel">Cancel</button>
+          <button value="default">Save</button>
+        </div>
+      </form>
+    </dialog>
+  </section>
+</template>
+
+<template id="tpl-crew">
+  <section class="view">
+    <div class="toolbar">
+      <h2>Crew</h2>
+      <button id="add-crew">+ Add Crew</button>
+    </div>
+    <table>
+      <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Flight Hours</th><th>Assigned Flight</th><th>Actions</th></tr></thead>
+      <tbody id="crew-body"></tbody>
+    </table>
+    <dialog id="crew-dialog">
+      <form id="crew-form" method="dialog">
+        <h3>Add Crew Member</h3>
+        <label>Name<input name="name" required></label>
+        <label>Role<select name="role"><option>Pilot</option><option>Co-Pilot</option><option>Flight Attendant</option><option>Engineer</option></select></label>
+        <label>Status<select name="status"><option>Available</option><option>On Duty</option><option>Off Duty</option></select></label>
+        <label>Flight Hours<input name="hours" type="number" value="0"></label>
+        <div class="dialog-actions">
+          <button value="cancel">Cancel</button>
+          <button value="default">Save</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="crew-assignment-dialog">
+      <form id="crew-assignment-form" method="dialog">
+        <h3>Assign Crew to Flight</h3>
+        <label>Crew member<select name="crew" id="assignment-crew"></select></label>
+        <label>Flight<select name="flight" id="assignment-flight"><option value="">Unassigned</option></select></label>
+        <div class="dialog-actions">
+          <button value="cancel">Cancel</button>
+          <button value="default">Save Assignment</button>
+        </div>
+      </form>
+    </dialog>
+  </section>
+</template>
+
+<template id="tpl-routes">
+  <section class="view">
+    <div class="toolbar">
+      <h2>Routes</h2>
+      <button id="add-route">+ Add Route</button>
+    </div>
+    <table>
+      <thead><tr><th>Code</th><th>Origin</th><th>Destination</th><th>Distance (km)</th><th>Actions</th></tr></thead>
+      <tbody id="routes-body"></tbody>
+    </table>
+    <dialog id="route-dialog">
+      <form id="route-form" method="dialog">
+        <h3>Add Route</h3>
+        <label>Code<input name="code" required></label>
+        <label>Origin<input name="origin" required></label>
+        <label>Destination<input name="dest" required></label>
+        <label>Distance (km)<input name="distance" type="number" required></label>
+        <div class="dialog-actions">
+          <button value="cancel">Cancel</button>
+          <button value="default">Save</button>
+        </div>
+      </form>
+    </dialog>
+  </section>
+</template>
+
+<template id="tpl-bookings">
+  <section class="view">
+    <div class="toolbar">
+      <h2>Bookings</h2>
+      <button id="add-booking">+ Add Booking</button>
+    </div>
+    <table>
+      <thead><tr><th>Passenger</th><th>Flight</th><th>Seat</th><th>Class</th><th>Price</th><th>Actions</th></tr></thead>
+      <tbody id="bookings-body"></tbody>
+    </table>
+    <dialog id="booking-dialog">
+      <form id="booking-form" method="dialog">
+        <h3>Add Booking</h3>
+        <label>Passenger<input name="passenger" required></label>
+        <label>Flight<select name="flight" id="booking-flight"></select></label>
+        <label>Seat<input name="seat" required></label>
+        <label>Class<select name="cls"><option>Economy</option><option>Business</option><option>First</option></select></label>
+        <label>Price<input name="price" type="number" required></label>
+        <div class="dialog-actions">
+          <button value="cancel">Cancel</button>
+          <button value="default">Save</button>
+        </div>
+      </form>
+    </dialog>
+  </section>
+</template>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
