@@ -1,21 +1,64 @@
-MIT License
+<div align="center">
 
-Copyright (c) 2026 Mark M. Mutunga
+# Skyline Ops Proprietary Software License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+**Copyright (c) 2026 Mark Mikile Mutunga. All rights reserved.**
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+**Contact:** Mark Mikile Mutunga  
+**Phone:** 0707678643
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+</div>
+
+---
+
+## 1. Grant of Limited Permission
+
+This license applies to the Skyline Ops software, source code, documentation, configuration, assets, tests, workflows, and related materials in this repository (collectively, the "Software").
+
+Permission to view the Software is granted only for personal evaluation, academic review, or internal assessment by authorized persons. No other rights are granted except where Mark Mikile Mutunga gives prior written permission.
+
+## 2. Restrictions
+
+Except as expressly authorized in writing by Mark Mikile Mutunga, you may **not**:
+
+- use the Software for commercial purposes;
+- copy, reproduce, redistribute, publish, sublicense, sell, lease, or lend the Software or any substantial portion of it;
+- host, deploy, or make the Software available to third parties as a product, service, demo platform, or derivative offering;
+- modify, adapt, translate, or create derivative works for distribution or third-party use;
+- remove, obscure, or alter copyright notices, attribution, or this license text;
+- represent the Software, in whole or in part, as open-source software or as freely licensed for unrestricted reuse.
+
+## 3. Ownership
+
+The Software is licensed, not sold. Mark Mikile Mutunga retains all right, title, and interest in and to the Software, including all associated intellectual property rights, except for any third-party components that remain subject to their own licenses.
+
+## 4. Third-Party Components
+
+The Software may reference or depend on third-party libraries, services, fonts, maps, APIs, or data providers. Those third-party components are governed by their own terms and licenses. This license does not grant rights to third-party components beyond what their respective owners permit.
+
+## 5. Confidentiality and Responsible Use
+
+If you receive access to non-public configuration, credentials, deployment details, or operational data related to the Software, you must keep that information confidential and use it only for authorized purposes. You are responsible for complying with applicable laws, platform terms, and data-protection requirements when using the Software.
+
+## 6. Termination
+
+Any permission granted under this license terminates automatically if you breach its terms. Upon termination, you must stop using the Software and destroy or delete copies in your possession or control, except where retention is required by law.
+
+## 7. Disclaimer of Warranties
+
+THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, ACCURACY, AVAILABILITY, OR OPERATIONAL SUITABILITY. USE OF THE SOFTWARE, INCLUDING ANY AVIATION, SCHEDULING, WEATHER, OR OPERATIONAL DATA PRESENTED BY IT, IS AT YOUR OWN RISK.
+
+## 8. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, MARK MIKILE MUTUNGA SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF DATA, PROFITS, REVENUE, BUSINESS, GOODWILL, OR OPERATIONAL INTERRUPTION, ARISING OUT OF OR RELATED TO THE SOFTWARE OR THIS LICENSE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+## 9. Permission Requests
+
+For commercial licensing, redistribution, deployment, or other permissions not granted by this document, contact:
+
+<div align="center">
+
+**Mark Mikile Mutunga**  
+**Phone:** 0707678643
+
+</div>

@@ -161,4 +161,4 @@ A GitHub Actions workflow is provided at `.github/workflows/deploy.yml`.
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
+This project is **not fully open source**. It is distributed under the Skyline Ops Proprietary Software License. Use, copying, redistribution, commercial use, hosting, and derivative distribution are restricted unless Mark Mikile Mutunga grants prior written permission. See [LICENSE](./LICENSE) for the full terms and contact details.
