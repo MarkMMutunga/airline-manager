@@ -1,113 +1,164 @@
 # Skyline Ops
 
-Skyline Ops is a browser-based airline operations dashboard for managing flights, aircraft, crew, routes, and bookings from one workspace.
+Skyline Ops is a browser-based airline operations dashboard for managing flights, aircraft, crew, routes, and bookings from a single workspace. It is built as a static web application with plain HTML, CSS, and JavaScript, with optional Supabase authentication and cloud synchronization.
+
+## Overview
+
+The application provides an operational view of a small airline demo environment. On first launch it seeds local demo data into the browser so the dashboard, tables, and map are immediately usable. Users can review flight status, monitor route and aircraft utilization, assign crew, create bookings, inspect airport weather, and export operational reports.
 
 ## Features
 
-- Dashboard KPIs for flights, aircraft, crew, bookings, revenue, and on-time performance
-- Interactive world map with airports, routes, and flight progress based on departure time and route distance
-- Live OpenSky airspace count and sampled aircraft markers with a graceful fallback when the public endpoint is unavailable
-- Live airport weather from Open-Meteo with operational weather alerts
-- Clickable flight details with aircraft, route, booking, progress, and estimated arrival information
-- Notifications for delayed or cancelled flights, aircraft maintenance, crew coverage, and duty-hour reviews
-- Flight search and status filtering
-- Aircraft utilization and maintenance attention indicators
-- Aircraft availability and overlapping schedule validation when creating flights
-- Crew-to-flight assignment and reassignment with overlap conflict protection
-- Route performance metrics for flights, bookings, revenue, load factor, and full-flight revenue forecast
-- Revenue analytics by cabin class
-- Booking load-factor summaries and overbooking protection
-- Light and dark themes with saved preference
-- JSON backup, Flights CSV, and Bookings CSV exports
-- Optional Supabase email authentication with sign-in, account creation, session restoration, and sign-out
-- Branded SVG favicon for browser tabs and bookmarks
-- Responsive layout for desktop and mobile screens
+- **Operations dashboard**: KPIs for flights, aircraft, crew, bookings, revenue, and on-time performance.
+- **Interactive world map**: Airports, routes, and in-progress flight visualization based on departure time and route distance.
+- **Live airspace context**: OpenSky airspace count and sampled aircraft markers, with graceful fallback when the public endpoint is unavailable.
+- **Airport weather**: Current weather from Open-Meteo and operational weather alerts.
+- **Flight management**: Clickable flight details, status filtering, search, estimated arrival, progress, aircraft availability checks, and overlapping schedule validation.
+- **Crew management**: Flight assignment/reassignment with overlap conflict protection and duty-hour review indicators.
+- **Aircraft management**: Utilization and maintenance attention indicators.
+- **Route analytics**: Flights, bookings, revenue, load factor, and full-flight revenue forecast by route.
+- **Booking controls**: Cabin-class revenue analytics, load-factor summaries, and overbooking protection.
+- **Authentication (optional)**: Supabase email sign-in, account creation, session restoration, and sign-out.
+- **Cloud sync (optional)**: User-scoped Supabase persistence after schema installation, with localStorage fallback.
+- **Exports**: Complete JSON backup, Flights CSV, and Bookings CSV.
+- **UI**: Light/dark themes with saved preference, responsive layout, and branded SVG favicon.
 
-## Run Locally
+## Technology Stack
 
-This is a static browser application. No build step or package installation is required.
+- **Frontend**: HTML, CSS, vanilla JavaScript (no bundler/build step)
+- **Mapping**: Leaflet + OpenStreetMap tiles
+- **Weather**: Open-Meteo
+- **Live aircraft data**: OpenSky Network public endpoint
+- **Authentication/data sync**: Supabase (`@supabase/supabase-js` browser client pattern/config)
+- **Testing**: Node.js built-in test runner (`node --test`)
+- **Deployment**: GitHub Actions workflow for GitHub Pages
 
-1. Open `index.html` directly in a modern browser, or serve the folder with any static web server.
-2. Use the navigation buttons to switch between Dashboard, Flights, Aircraft, Crew, Routes, and Bookings.
-3. The first launch seeds demo data automatically.
-
-For a simple local server with Python:
+## Project Structure
 
 ```text
+.
+├── index.html                 Application markup and view templates
+├── favicon.svg                Browser tab/bookmark icon
+├── css/
+│   └── styles.css             Layout, responsive styling, light/dark themes
+├── js/
+│   ├── app.js                 State, rendering, interactions, APIs, auth, exports, sync
+│   └── supabase-config.js     Supabase project URL and browser-safe publishable key
+├── tests/
+│   └── operations.test.js     Scheduling and load-factor rule tests
+├── supabase-schema.sql        Supabase tables and Row Level Security policies
+├── package.json               Test script metadata
+└── .github/workflows/
+    └── deploy.yml             GitHub Pages deployment workflow
+```
+
+## Getting Started
+
+### Prerequisites
+
+- A modern web browser.
+- Optional: Python 3 (or any static file server) for local serving.
+- Optional: Node.js 18+ to run tests.
+- Optional: A Supabase project for authentication/cloud sync.
+
+### Run Locally
+
+This is a static browser application. No package installation is required for normal use.
+
+1. Clone the repository.
+2. Open `index.html` directly in a browser, or serve the repository root with a static server.
+3. Use the navigation controls to switch between Dashboard, Flights, Aircraft, Crew, Routes, and Bookings.
+4. Demo data is seeded automatically on first launch.
+
+Example local server with Python:
+
+```bash
 python -m http.server 8000
 ```
 
 Then open `http://localhost:8000`.
 
-## Project Structure
+## Data Storage and Persistence
 
-```text
-index.html          Application markup and view templates
-css/styles.css      Layout, responsive styling, light/dark themes
-js/app.js           State, rendering, interactions, APIs, authentication, and exports
-js/supabase-config.js
-					Supabase project URL and browser-safe publishable key
-supabase-schema.sql  Database tables and Row Level Security policies
-tests/operations.test.js
-					Dependency-free tests for scheduling and load-factor rules
-package.json         Test script
-favicon.svg         Skyline Ops browser favicon
-```
+- **Local storage**: Operational data is stored in `localStorage` under the key `airline-ops-data-v2` (flights, aircraft, crew, routes, bookings, activity history).
+- **Theme preference**: Stored separately so it persists between visits.
+- **Reset behavior**: Clearing browser site data resets local application state and demo data.
 
-## Data Storage
+### Supabase Cloud Sync
 
-Application data is stored in the browser's `localStorage` under the key `airline-ops-data-v2`. This includes flights, aircraft, crew, routes, bookings, and activity history.
+Cloud persistence is optional and requires the database schema to be installed:
 
-The selected theme is stored separately so it persists between visits. Clearing browser site data resets the application and demo data.
+1. Open the Supabase project SQL Editor.
+2. Run the contents of `supabase-schema.sql`.
+3. Keep Row Level Security enabled on every table.
+4. Sign in to Skyline Ops with a configured Supabase user.
+
+Behavior after setup:
+
+- If a signed-in user has no cloud records, the app can migrate current local data to Supabase.
+- If cloud records exist, they are loaded into the dashboard.
+- Subsequent local changes are synchronized for that signed-in user.
+- The app falls back to local storage when the schema or network is unavailable.
+
+## Authentication
+
+The app reads Supabase configuration from `js/supabase-config.js`.
+
+- The **publishable (anon) key** is intended for browser use.
+- **Never** place a service-role key, secret API key, or privileged credential in client-side files.
+- Email confirmation and related auth behavior are controlled in the Supabase dashboard under Authentication settings.
 
 ## External Services
 
-- Leaflet provides the interactive map.
-- OpenStreetMap provides map tiles and attribution.
-- Open-Meteo provides current airport weather.
-- Google Fonts provides Space Grotesk and DM Mono.
-- OpenSky Network provides the optional live airspace aircraft count.
-- Supabase provides optional browser authentication using the publishable key in `js/supabase-config.js`.
+| Service | Purpose | Notes |
+|---|---|---|
+| Leaflet | Interactive map rendering | Loaded by the app |
+| OpenStreetMap | Map tiles/attribution | Requires internet access |
+| Open-Meteo | Airport weather | Requires internet access |
+| OpenSky Network | Live airspace aircraft count/markers | Public endpoint may be rate-limited/unavailable; app falls back gracefully |
+| Google Fonts | Space Grotesk / DM Mono | Requires internet access |
+| Supabase | Auth and optional cloud sync | Requires valid project config and schema |
 
-An internet connection is needed for external map tiles, weather, and fonts. The core tables and local data continue to work if those services are unavailable.
+Core local tables and locally stored data continue to function if external services are unavailable, though map/weather/live-airspace features may degrade.
 
 ## Exports
 
-Use the download button in the header to export:
+Use the download/export control in the header to generate:
 
-- A complete JSON backup of the current application state
-- A Flights CSV report
-- A Bookings CSV report
+- **JSON backup** of the current application state
+- **Flights CSV** report
+- **Bookings CSV** report
 
-## Development Notes
+## Testing
 
-The application uses plain HTML, CSS, and JavaScript with no bundler. Keep state changes inside `js/app.js`, preserve the existing template-based view structure, and run editor diagnostics after modifying the application.
+The repository includes dependency-free Node.js tests for core operational rules (scheduling and load-factor behavior).
 
-The current schedule checks use route distance and an estimated cruise speed of 850 km/h to calculate flight windows. This supports local validation and visual progress; it is not a substitute for certified dispatch or aviation scheduling software.
+Run tests:
 
-## Supabase Authentication
-
-The app is configured for the Supabase project URL and publishable key in `js/supabase-config.js`. The publishable key is safe for browser use when Supabase Row Level Security is configured correctly. Never place a service-role or secret key in this file.
-
-Email confirmation behavior is controlled in the Supabase dashboard under Authentication settings. Operational records use local browser storage by default and can synchronize to Supabase after the schema is installed.
-
-## Supabase Cloud Sync
-
-Cloud persistence is implemented but requires the schema to exist first:
-
-1. Open the Supabase project SQL Editor.
-2. Paste and run `supabase-schema.sql`.
-3. Keep Row Level Security enabled on every table.
-4. Sign in to Skyline Ops.
-
-When a signed-in user has no cloud records, the app migrates the current local data. If cloud records exist, they are loaded into the dashboard. Later local changes are synchronized for that signed-in user. The app falls back to local storage when the schema or network is unavailable.
-
-## Tests and Deployment
-
-Install Node.js, then run:
-
-```text
+```bash
 npm test
 ```
 
-The repository includes a GitHub Actions workflow at `.github/workflows/deploy.yml` for GitHub Pages deployment from `main`. Enable GitHub Pages in the repository settings with **GitHub Actions** as the source after the first workflow run.
+## Deployment
+
+A GitHub Actions workflow is provided at `.github/workflows/deploy.yml`.
+
+- Trigger: push to `main` (and manual dispatch).
+- Target: GitHub Pages.
+- Setup: after the first workflow run, enable GitHub Pages in repository settings with **GitHub Actions** as the source.
+
+## Development Notes
+
+- Keep state changes centralized in `js/app.js` and preserve the existing template-based view structure.
+- This project has no bundler; edit source files directly.
+- Schedule checks use route distance and an estimated cruise speed of **850 km/h** to calculate flight windows. This supports local validation and visualization and is **not** a substitute for certified dispatch or aviation scheduling software.
+- When changing behavior, run `npm test` and verify affected UI flows manually in a browser.
+
+## Security Notes
+
+- Treat `js/supabase-config.js` as public client configuration only.
+- Rely on Supabase Row Level Security for data protection; do not weaken RLS policies.
+- Do not commit secrets, service-role keys, or private tokens.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
